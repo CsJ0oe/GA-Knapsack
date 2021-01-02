@@ -5,20 +5,20 @@ class GeneticAlgorithm:
         self.data = data
         self.POPULATION_SIZE = kargs.get("population_size", 50)
         self.population = self._genPopulation()
-        self.MAX_WEIGHT = 12210
-        self.MAX_VOLUME = 12
-        self.MAX_GENERATIONS = 50
+        self.MAX_WEIGHT = kargs.get("max_weight", 12210)
+        self.MAX_VOLUME = kargs.get("max_volume", 12)
+        self.MAX_GENERATIONS =kargs.get("max_generations", 50)
         self.TOURNAMENT_SELECTION_SIZE = 5
         self.CROSSING_RATE = 0.8
         self.MUTATION_RATE = 0.2
     
     def fittest(self):
         return self.population[0]
-        
+
     def printFittest(self):
         fittestOne = self.fittest()
         nb_items = [i for i in fittestOne if i == 1].__len__()
-        print("selected {} items..".format(nb_items))
+        print("\nselected {} items..".format(nb_items))
 
         for (i,(selected, item)) in enumerate(zip(self.fittest(), self.data)):
             if selected:
@@ -114,3 +114,18 @@ class GeneticAlgorithm:
 
             new_population.sort(key=lambda x: self._fitness(x), reverse=True)
             self.population = new_population
+
+if __name__ == "__main__":
+    # setup data (weight, volume, price, name)
+    data = [(821, 0.8, 118, 'A'), (1144, 1, 322, 'B'), (634, 0.7, 166, 'C'), (701, 0.9, 195, 'D'),
+            (291, 0.9, 100, 'E'), (1702, 0.8, 142, 'F'), (1633, 0.7, 100, 'G'), (1086, 0.6, 145, 'H'),
+            (124, 0.6, 100, 'J'), (718, 0.9, 208, 'K'), (976, 0.6, 100, 'L'), (1438, 0.7, 312, 'M'),
+            (910, 1, 198, 'W'), (148, 0.7, 171, 'S'), (1636, 0.9, 117, 'V'), (237, 0.6, 100, 'N'),
+            (771, 0.9, 329, 'Z'), (604, 0.6, 391, 'P'), (1078, 0.6, 100, 'QA'), (640, 0.8, 120, 'O'),
+            (1510, 1, 188, 'RE'), (741, 0.6, 271, 'JSU'), (1358, 0.9, 334, 'GT'), (1682, 0.7, 153, 'FA'),
+            (993, 0.7, 130, 'TT'), (99, 0.7, 100, 'MA'), (1068, 0.8, 154, 'SA'), (1669, 1, 289, 'KI')]
+
+    ga = GeneticAlgorithm(data, max_weight=12210, max_volume=12, max_generations=50, population_size=200) 
+
+    ga.run()     # run the GA
+    print(ga.printFittest()) 
