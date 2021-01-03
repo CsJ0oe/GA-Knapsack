@@ -1,34 +1,55 @@
 import random
+import copy
+import matplotlib.pyplot as plt 
 
 class GeneticAlgorithm:
     def __init__(self, data, **kargs):
         self.data = data
-        self.POPULATION_SIZE = kargs.get("population_size", 50)
-        self.population = self._genPopulation()
-        self.MAX_WEIGHT = kargs.get("max_weight", 12210)
-        self.MAX_VOLUME = kargs.get("max_volume", 12)
-        self.MAX_GENERATIONS =kargs.get("max_generations", 50)
+        self.POPULATION_SIZE           = kargs.get("population_size", 50)
+        self.MAX_WEIGHT                = kargs.get("max_weight", 12210)
+        self.MAX_VOLUME                = kargs.get("max_volume", 12)
+        self.MAX_GENERATIONS           = kargs.get("max_generations", 50)
+        self.NUMBER_OF_ELITES          = kargs.get("elites", 5)
         self.TOURNAMENT_SELECTION_SIZE = 5
-        self.CROSSING_RATE = 0.8
-        self.MUTATION_RATE = 0.2
+        self.CROSSING_RATE             = 0.8
+        self.MUTATION_RATE             = 0.2
+        self.population                = self._genPopulation()
+        self.evolutionGraph            = []
     
     def fittest(self):
         return self.population[0]
 
+    def _nbItemsInChromosome(self, chromosome):
+        return [i for i in chromosome if i == 1].__len__()
+
     def printFittest(self):
         fittestOne = self.fittest()
-        nb_items = [i for i in fittestOne if i == 1].__len__()
-        print("\nselected {} items..".format(nb_items))
+        nb_items = self._nbItemsInChromosome(fittestOne)
+        print("\nselected {} items with total value equals to {}".format(nb_items, self._fitness(fittestOne)))
 
         for (i,(selected, item)) in enumerate(zip(self.fittest(), self.data)):
             if selected:
                 print("\titem {}: weight={} volume={} price={} name={}".format(i, item[0], item[1], item[2], item[3]))
 
+    def printEvolutionGraph(self):
+        _, ax = plt.subplots(figsize=(10, 6))
+        xAxis = [iteration for (iteration, _) in self.evolutionGraph]
+        yAxis = [self._fitness(chromosome) for (_, chromosome) in self.evolutionGraph]
+        
+        ax.scatter(x = xAxis, y = yAxis)
+        plt.xlabel("Iteration")
+        plt.ylabel("Total value of knapsack's items")
+
+        plt.show()
+
     def _genChromosome(self):
         return [random.randint(0,1) for _ in self.data]
 
     def _genPopulation(self):
-        return [self._genChromosome() for _ in range(self.POPULATION_SIZE)]
+        population = [self._genChromosome() for _ in range(self.POPULATION_SIZE)]
+        population.sort(key=lambda x: self._fitness(x), reverse=True)
+
+        return population
     
     def _fitness(self, chromosome):
         weight, volume, price = 0, 0, 0
@@ -49,7 +70,8 @@ class GeneticAlgorithm:
             i += 1
         tournament_pop.sort(key=lambda x: self._fitness(x), reverse=True)
         
-        return tournament_pop[0]
+        # lists are mutable objects, we use [:] to return a copy
+        return tournament_pop[0][:]
 
     def crossover_chromosomes(self, parent1, parent2):
         if random.random() < self.CROSSING_RATE: 
@@ -89,8 +111,15 @@ class GeneticAlgorithm:
     def run(self):
         i = 0
         while i < self.MAX_GENERATIONS :
+            # lists are mutable objects, we use [:] to return a copy
+            self.evolutionGraph.append((i, self.population[0][:]))
+            
             i += 1
             new_population = []
+            '''Keep The Fittest Chromosomes'''
+            for elite in range(self.NUMBER_OF_ELITES):
+                # lists are mutable objects, we use [:] to return a copy
+                new_population.append(self.population[elite][:])
             
 
             print("\nCrossover and Mutation Trace:")
@@ -129,3 +158,5 @@ if __name__ == "__main__":
 
     ga.run()     # run the GA
     print(ga.printFittest()) 
+    ga.printEvolutionGraph()
+    
